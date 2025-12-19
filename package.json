@@ -1,0 +1,23 @@
+{
+  "name": "codebase-qa-tool",
+  "version": "1.0.0",
+  "description": "AI-powered Codebase Q&A Tool - Ask questions about any codebase",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "dev:backend": "cd backend && npm run dev"
+  },
+  "keywords": [
+    "ai",
+    "codebase",
+    "qa",
+    "developer-tools",
+    "openai",
+    "angular",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

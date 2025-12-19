@@ -1,0 +1,43 @@
+# Dependencies
+backend/node_modules/
+frontend/node_modules/
+.npm
+
+# Build outputs
+dist/
+build/
+frontend/.angular/
+
+# Environment files
+backend/.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Uploads and projects (runtime data)
+backend/uploads/
+backend/projects/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+*.tgz
+*.zip
+

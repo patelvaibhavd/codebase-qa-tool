@@ -1,0 +1,399 @@
+{
+  "info": {
+    "name": "CodeQ - Codebase Q&A API",
+    "description": "API collection for the CodeQ Codebase Q&A Tool.\n\nThis API allows you to:\n- Upload codebases (GitHub URL or ZIP)\n- Ask questions about the code\n- Browse project files and folders\n- Manage storage and cleanup",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API is running and get AI provider status"
+          }
+        },
+        {
+          "name": "Get AI Provider Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/provider",
+              "host": ["{{baseUrl}}"],
+              "path": ["provider"]
+            },
+            "description": "Get current AI provider configuration (OpenAI, Ollama, Groq, or Demo)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Upload",
+      "item": [
+        {
+          "name": "Upload GitHub Repository",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.projectId) {",
+                  "    pm.collectionVariables.set('projectId', jsonData.projectId);",
+                  "    console.log('Project ID saved:', jsonData.projectId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"repoUrl\": \"https://github.com/expressjs/express\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upload/github",
+              "host": ["{{baseUrl}}"],
+              "path": ["upload", "github"]
+            },
+            "description": "Clone and index a public GitHub repository.\n\nThe projectId in the response is automatically saved for use in other requests."
+          }
+        },
+        {
+          "name": "Upload ZIP File",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.projectId) {",
+                  "    pm.collectionVariables.set('projectId', jsonData.projectId);",
+                  "    console.log('Project ID saved:', jsonData.projectId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "codebase",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upload/zip",
+              "host": ["{{baseUrl}}"],
+              "path": ["upload", "zip"]
+            },
+            "description": "Upload and index a ZIP file containing a codebase.\n\nSelect a ZIP file in the Body tab.\n\nThe projectId in the response is automatically saved for use in other requests."
+          }
+        },
+        {
+          "name": "Upload Direct (JSON)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.projectId) {",
+                  "    pm.collectionVariables.set('projectId', jsonData.projectId);",
+                  "    console.log('Project ID saved:', jsonData.projectId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"projectName\": \"My Project\",\n    \"files\": [\n        {\n            \"path\": \"src/index.js\",\n            \"content\": \"console.log('Hello World');\"\n        },\n        {\n            \"path\": \"README.md\",\n            \"content\": \"# My Project\\n\\nThis is a sample project.\"\n        }\n    ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/upload/direct",
+              "host": ["{{baseUrl}}"],
+              "path": ["upload", "direct"]
+            },
+            "description": "Upload files directly as JSON (for small codebases or testing)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Q&A",
+      "item": [
+        {
+          "name": "Ask Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"question\": \"What is the main purpose of this codebase?\",\n    \"options\": {\n        \"language\": null,\n        \"folder\": null\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/qa/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["qa", "ask"]
+            },
+            "description": "Ask a question about the codebase.\n\nOptional filters:\n- language: Filter by programming language (e.g., \"javascript\", \"typescript\")\n- folder: Filter by folder path"
+          }
+        },
+        {
+          "name": "Ask Question (with filters)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"question\": \"How does the routing work?\",\n    \"options\": {\n        \"language\": \"javascript\",\n        \"folder\": \"lib\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/qa/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["qa", "ask"]
+            },
+            "description": "Ask a question with language and folder filters"
+          }
+        },
+        {
+          "name": "Get Suggested Questions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/qa/suggestions/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["qa", "suggestions", "{{projectId}}"]
+            },
+            "description": "Get AI-generated suggested questions based on the codebase structure"
+          }
+        },
+        {
+          "name": "Explain File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"projectId\": \"{{projectId}}\",\n    \"filePath\": \"lib/router/index.js\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/qa/explain-file",
+              "host": ["{{baseUrl}}"],
+              "path": ["qa", "explain-file"]
+            },
+            "description": "Get a detailed AI explanation of a specific file"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Project",
+      "item": [
+        {
+          "name": "Get Project Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}", "stats"]
+            },
+            "description": "Get statistics about the indexed project (file count, languages, etc.)"
+          }
+        },
+        {
+          "name": "Get All Files",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}", "files"]
+            },
+            "description": "Get list of all indexed files in the project"
+          }
+        },
+        {
+          "name": "Get Files (filtered by language)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}/files?language=javascript",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}", "files"],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "javascript"
+                }
+              ]
+            },
+            "description": "Get files filtered by programming language"
+          }
+        },
+        {
+          "name": "Get Files (filtered by folder)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}/files?folder=lib",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}", "files"],
+              "query": [
+                {
+                  "key": "folder",
+                  "value": "lib"
+                }
+              ]
+            },
+            "description": "Get files filtered by folder path"
+          }
+        },
+        {
+          "name": "Get Folder Structure",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}/folders",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}", "folders"]
+            },
+            "description": "Get the folder structure of the project"
+          }
+        },
+        {
+          "name": "Get File Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}/file?path=lib/router/index.js",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}", "file"],
+              "query": [
+                {
+                  "key": "path",
+                  "value": "lib/router/index.js"
+                }
+              ]
+            },
+            "description": "Get the content of a specific file"
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/{{projectId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "{{projectId}}"]
+            },
+            "description": "Delete a project (removes from memory and disk)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Storage Management",
+      "item": [
+        {
+          "name": "Get Disk Usage",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/storage/usage",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "storage", "usage"]
+            },
+            "description": "Get disk usage statistics for all projects and uploads"
+          }
+        },
+        {
+          "name": "Cleanup All Projects",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/project/storage/cleanup",
+              "host": ["{{baseUrl}}"],
+              "path": ["project", "storage", "cleanup"]
+            },
+            "description": "Delete ALL projects from memory and disk. Use with caution!"
+          }
+        }
+      ]
+    }
+  ]
+}
+
