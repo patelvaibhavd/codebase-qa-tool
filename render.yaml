@@ -1,16 +1,28 @@
 # ============================================
-# Render Blueprint - CodeQ Deployment (FREE PLAN)
+# Render Blueprint - CodeQ Deployment
 # ============================================
+# 
+# Deploy with: https://render.com/docs/blueprint-spec
+# Click "New" -> "Blueprint" -> Connect this repo
 #
-# Deploy via:
-# Render Dashboard → New → Blueprint → Connect Repository
+# IMPORTANT: Ollama does NOT work on Render!
+# Ollama runs locally on your machine. For cloud deployment,
+# you must use one of these AI providers instead:
 #
-# NOTES:
-# - Static sites MUST NOT have a region
-# - Ollama does NOT work on Render
-# - Groq works on free tier
-# - API keys must be added from Render Dashboard
+#   1. Groq (RECOMMENDED) - Free tier with 14,400 requests/day
+#      Get key at: https://console.groq.com
 #
+#   2. OpenAI - Paid, best quality
+#      Get key at: https://platform.openai.com/api-keys
+#
+#   3. Demo Mode - No AI key needed (simulated responses)
+#
+# After deployment, set your API key in the Render dashboard:
+# Dashboard -> codeq-backend -> Environment -> Add GROQ_API_KEY or OPENAI_API_KEY
+# ============================================
+
+# ============================================
+# Render Blueprint - CodeQ Deployment
 # ============================================
 
 services:
@@ -37,24 +49,18 @@ services:
         value: 10000
 
       # AI Provider
-      # Options: demo | groq | openai
       - key: AI_PROVIDER
         value: groq
 
-      # Groq API Key
-      # Set manually in Render Dashboard (DO NOT hardcode)
+      # Groq API Key (set in dashboard)
       - key: GROQ_API_KEY
         sync: false
 
-      # Optional OpenAI key
-      # - key: OPENAI_API_KEY
-      #   sync: false
-
-      # Upload limit (100MB)
+      # Upload size limit
       - key: MAX_FILE_SIZE
         value: 100000000
 
-      # Frontend URL (auto-filled after frontend deploy)
+      # Frontend URL (auto injected)
       - key: FRONTEND_URL
         fromService:
           type: web
@@ -67,7 +73,6 @@ services:
   - type: web
     name: codeq-frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build -- --configuration=production
     staticPublishPath: dist/codebase-qa/browser
@@ -82,13 +87,11 @@ services:
         value: no-cache
 
     routes:
-      # SPA fallback routing
       - type: rewrite
         source: /*
         destination: /index.html
 
     envVars:
-      # Backend API URL
       - key: API_URL
         fromService:
           type: web
