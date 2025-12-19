@@ -1,108 +1,96 @@
 # ============================================
-# Render Blueprint - CodeQ Deployment
+# Render Blueprint - CodeQ Deployment (FREE PLAN)
 # ============================================
-# 
-# Deploy with: https://render.com/docs/blueprint-spec
-# Click "New" -> "Blueprint" -> Connect this repo
 #
-# IMPORTANT: Ollama does NOT work on Render!
-# Ollama runs locally on your machine. For cloud deployment,
-# you must use one of these AI providers instead:
+# Deploy via:
+# Render Dashboard → New → Blueprint → Connect Repository
 #
-#   1. Groq (RECOMMENDED) - Free tier with 14,400 requests/day
-#      Get key at: https://console.groq.com
+# NOTES:
+# - Static sites MUST NOT have a region
+# - Ollama does NOT work on Render
+# - Groq works on free tier
+# - API keys must be added from Render Dashboard
 #
-#   2. OpenAI - Paid, best quality
-#      Get key at: https://platform.openai.com/api-keys
-#
-#   3. Demo Mode - No AI key needed (simulated responses)
-#
-# After deployment, set your API key in the Render dashboard:
-# Dashboard -> codeq-backend -> Environment -> Add GROQ_API_KEY or OPENAI_API_KEY
 # ============================================
 
 services:
   # ============================================
-  # Backend API Service
+  # Backend API Service (Node.js)
   # ============================================
   - type: web
     name: codeq-backend
     runtime: node
-    region: oregon  # Change to your preferred region
-    plan: free      # Use 'starter' for production
+    region: oregon
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /api/health
+
     envVars:
-      # AI Provider Configuration
-      # Options: "demo", "groq", "openai"
-      # NOTE: "ollama" does NOT work on Render - it requires local installation
-      - key: AI_PROVIDER
-        value: groq  # Change to "openai" or "demo" if needed
-      
-      # Groq API Key (Free tier available)
-      # Get your key at: https://console.groq.com
-      - key: GROQ_API_KEY
-        sync: false  # Set manually in Render dashboard for security
-      
-      # OpenAI API Key (if using OpenAI instead)
-      # - key: OPENAI_API_KEY
-      #   sync: false
-      
-      # Server Configuration
-      - key: PORT
-        value: 10000
-      
+      # Environment
       - key: NODE_ENV
         value: production
-      
-      # Max file upload size (100MB)
+
+      # Server
+      - key: PORT
+        value: 10000
+
+      # AI Provider
+      # Options: demo | groq | openai
+      - key: AI_PROVIDER
+        value: groq
+
+      # Groq API Key
+      # Set manually in Render Dashboard (DO NOT hardcode)
+      - key: GROQ_API_KEY
+        sync: false
+
+      # Optional OpenAI key
+      # - key: OPENAI_API_KEY
+      #   sync: false
+
+      # Upload limit (100MB)
       - key: MAX_FILE_SIZE
         value: 100000000
-      
-      # Frontend URL for CORS (will be set after static site deploys)
+
+      # Frontend URL (auto-filled after frontend deploy)
       - key: FRONTEND_URL
         fromService:
           type: web
           name: codeq-frontend
           property: host
-    
-    # Persistent disk for project storage (optional, paid feature)
-    # Uncomment if you need persistent storage
-    # disk:
-    #   name: codeq-storage
-    #   mountPath: /var/data/projects
-    #   sizeGB: 1
 
   # ============================================
-  # Frontend Static Site
+  # Frontend Static Site (Angular)
   # ============================================
   - type: web
     name: codeq-frontend
     runtime: static
-    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build -- --configuration=production
     staticPublishPath: dist/codebase-qa/browser
+
     headers:
       - path: /*
         name: Cache-Control
         value: public, max-age=31536000
+
       - path: /index.html
         name: Cache-Control
         value: no-cache
+
     routes:
-      # SPA routing - redirect all routes to index.html
+      # SPA fallback routing
       - type: rewrite
         source: /*
         destination: /index.html
+
     envVars:
-      # Backend API URL (will be set after backend deploys)
+      # Backend API URL
       - key: API_URL
         fromService:
           type: web
           name: codeq-backend
           property: host
-
